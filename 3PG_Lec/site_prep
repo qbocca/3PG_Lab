@@ -1,0 +1,81 @@
+# Process and summarize data to calculate monthly averages
+process_and_summarize_data <- function(data) {
+  # Add days in February
+  data <- data %>%
+    mutate(days_in_feb = sapply(year, days_in_february))
+
+  # Add a month column based on the day of the year (yday)
+  data <- data %>%
+    mutate(
+      month = case_when(
+        yday <= 31 ~ 1,  # January
+        yday <= 31 + days_in_feb ~ 2,  # February
+        yday <= 31 + days_in_feb + 31 ~ 3,  # March
+        yday <= 31 + days_in_feb + 31 + 30 ~ 4,  # April
+        yday <= 31 + days_in_feb + 31 + 30 + 31 ~ 5,  # May
+        yday <= 31 + days_in_feb + 31 + 30 + 31 + 30 ~ 6,  # June
+        yday <= 31 + days_in_feb + 31 + 30 + 31 + 30 + 31 ~ 7,  # July
+        yday <= 31 + days_in_feb + 31 + 30 + 31 + 30 + 31 + 31 ~ 8,  # August
+        yday <= 31 + days_in_feb + 31 + 30 + 31 + 30 + 31 + 31 + 30 ~ 9,  # September
+        yday <= 31 + days_in_feb + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31 ~ 10,  # October
+        yday <= 31 + days_in_feb + 31 + 30 + 31 + 30 + 31 + 31 + 30 + 31 + 30 ~ 11,  # November
+        TRUE ~ 12  # December
+      )
+    )
+
+  # Group by year and month, then calculate monthly means
+  monthly_means <- data %>%
+    group_by(year, month) %>%
+    summarise(across(c(dayl..s., prcp..mm.day., srad..W.m.2., swe..kg.m.2., tmax..deg.c., tmin..deg.c., vp..Pa.),
+                     \(x) mean(x, na.rm = TRUE)),
+              .groups = "drop")
+
+  # Add a new column for srad calculation
+  monthly_means <- monthly_means %>%
+    mutate(srad = (srad..W.m.2. * dayl..s.) / 1000000)
+
+  # Adjust column names to match required format
+  monthly_means <- monthly_means %>%
+    rename(
+      tmp_min = tmin..deg.c.,
+      tmp_max = tmax..deg.c.,
+      prcp = prcp..mm.day.
+    ) %>%
+    mutate(
+      tmp_ave = (tmp_min + tmp_max) / 2,
+      frost_days = sapply(tmp_min, calculate_frost_days)
+    ) %>%
+    dplyr::select(year, month, tmp_min, tmp_max, tmp_ave, prcp, srad, frost_days)
+
+  return(monthly_means)
+}
+
+# Define the days_in_february function
+days_in_february <- function(year) {
+  if ((year %% 4 == 0 && year %% 100 != 0) || (year %% 400 == 0)) {
+    return(29)
+  } else {
+    return(28)
+  }
+}
+
+# Define function to calculate frost days
+calculate_frost_days <- function(tmp_min) {
+  frost_days <- tmp_min * (-2.0) + 11.6
+
+  if (frost_days <= 0) {
+    return(0)
+  } else if (tmp_min <= -9.0) {
+    return(30)
+  } else {
+    return(frost_days)
+  }
+}
+
+dat <- read.csv("/home/quentinb/Downloads/biloxi.csv")
+
+dat2 <- process_and_summarize_data(dat)
+
+head(dat2)
+
+write.csv(dat2, "biloxi.csv")
