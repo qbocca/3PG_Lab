@@ -5,9 +5,9 @@ library(tidyr)
 
 #data prep
 
-site.grid <- read.csv(file.path("/home/quentinb/PhdWork/3PG_Lec/pixel_1/site_grid.csv"))
-spp.grid <- read.csv(file.path("/home/quentinb/PhdWork/3PG_Lec/pixel_1/spp_grid.csv"))
-biloxi.grid <- read.csv(file.path("/home/quentinb/PhdWork/3PG_Lec/biloxi.csv"))
+site.grid <- read.csv(file.path("3PG_Lec/pixel_1/site_grid.csv"))
+spp.grid <- read.csv(file.path("3PG_Lec/pixel_1/spp_grid.csv"))
+biloxi.grid <- read.csv(file.path("3PG_Lec/biloxi.csv"))
 
 PX <- get_parameters(mode = "parameters", sp_names = "Pinus taeda")
 
@@ -39,6 +39,7 @@ site.grid2 <- qformater(site.grid,"site")
 
 spp.grid <- qformater(spp.grid, "spp")
 
+
 spp.grid <- spp.grid %>%
     mutate(
         stems_n = 500,
@@ -46,6 +47,7 @@ spp.grid <- spp.grid %>%
         biom_root = 0.1,
         biom_foliage = 0.1
     )
+
 
 
 wa = c(250,300,350,400,450)
@@ -59,8 +61,6 @@ for (value in wa) {
 site.grid2 <- site.grid2 %>%
     mutate(
         asw_max = value,
-        soil_class = 4,
-        latitude = 30.502085144562226, 
     )
 
   
