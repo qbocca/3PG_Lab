@@ -9,8 +9,7 @@ site.grid <- read.csv(file.path("3PG_Lec/pixel_1/site_grid.csv"))
 spp.grid <- read.csv(file.path("3PG_Lec/pixel_1/spp_grid.csv"))
 biloxi.grid <- read.csv(file.path("3PG_Lec/biloxi.csv"))
 
-PX <- read.csv(file.path("3PGT.csv")) 
-
+PX <- get_parameters(mode = "parameters", sp_names = "Pinus taeda")
 
 qformater <- function(grid,grid_type){
 
@@ -40,6 +39,28 @@ site.grid2 <- qformater(site.grid,"site")
 
 spp.grid <- qformater(spp.grid, "spp")
 
+spp.grid <- spp.grid %>%
+    mutate(
+        stems_n = 150000,
+        biom_stem = 0.1,
+        biom_root = 0.1,
+        biom_foliage = 0.1
+    )
+
+
+fert = c(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1)
+
+# Initialize a list to store outputs
+pg_runs <- list()
+
+for (value in fert) {
+
+# Modify spp.grid directly (you can set these values as needed)
+spp.grid <- spp.grid %>%
+    mutate(
+        fertility = value
+    )
+
   
   # Run 3PG model
   out_3PG <- run_3PG(
@@ -54,39 +75,29 @@ spp.grid <- qformater(spp.grid, "spp")
     check_input = TRUE, df_out = TRUE
   )
   
+  pg_runs[[paste0("out3PG_", value)]] <- out_3PG
+}
 
+# Combine all runs into a single dataframe
+combined_output <- bind_rows(pg_runs, .id = "run_id")
 
+str(fert)
 
-i_var <- c('stems_n',  'dbh', 'height', 'biom_stem', 'biom_root', 'biom_foliage')
+# Define variables for plotting
+i_var <- c('stems_n', 'dbh', 'height', 'biom_stem', 'biom_root', 'biom_foliage')
 i_lab <- c('Stem density', 'DBH', 'Height', 'Stem biomass', 'Root biomass', 'Foliage biomass')
 
-out_3PG %>%
+# Filter and plot the combined output
+combined_output %>%
   filter(variable %in% i_var) %>%
   mutate(variable = factor(variable, levels = i_var)) %>%
-  ggplot( aes(date, value))+
-  geom_line( aes(color = species), size = 0.5)+
-  facet_wrap( ~ variable, scales = 'free_y', ncol = 3, 
-    labeller = labeller(variable = setNames(i_lab, i_var) )) +
-  scale_color_brewer('', palette = 'Dark2') +
-  theme_classic()+
-  theme(legend.position="bottom")+
-  xlab("Calendar date") + ylab('Value')
-
-
-library(dplyr)
-library(lubridate)  # For date manipulation
-
-dst <- out_3PG %>%
-  filter(variable == "biom_stem") %>%
-  mutate(year = year(date)) %>%  # Extract the year from the date
-  group_by(year) %>%
-  summarize(mean_value = mean(value, na.rm = TRUE)) %>%
-  mutate(cumulative_mean = mean_value / row_number())
-
-head(dst)
-
-plot(dst$cumulative_mean)
-
-lines(dst$cumulative_mean)
-
+  ggplot(aes(date, value)) +
+  geom_line(aes(color = run_id), linewidth = 0.9) +  # Use color to differentiate runs
+  facet_wrap(~ variable, scales = 'free_y', ncol = 3, 
+             labeller = labeller(variable = setNames(i_lab, i_var))) +
+  scale_color_brewer('', palette = 'Dark2') +  # Set color palette
+  theme_classic() +  # Use a classic theme for the plot
+  theme(legend.position = "bottom") +  # Position the legend at the bottom
+  xlab("Calendar date") +  # Label for the x-axis
+  ylab('Value')  # Label for the y-axis
 

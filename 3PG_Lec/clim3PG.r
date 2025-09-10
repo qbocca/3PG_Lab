@@ -5,10 +5,12 @@ library(tidyr)
 
 #data prep
 
-site.grid <- read.csv(file.path("/home/quentinb/PhdWork/3PG_Lec/pixel_1/site_grid.csv"))
-spp.grid <- read.csv(file.path("/home/quentinb/PhdWork/3PG_Lec/pixel_1/spp_grid.csv"))
-pixel.grid <- read.csv(file.path("/home/quentinb/PhdWork/3PG_Lec/pixel_1/climate_grid.csv"))
-biloxi.grid <- read.csv(file.path("/home/quentinb/PhdWork/3PG_Lec/biloxi.csv"))
+site.grid <- read.csv(file.path("3PG_Lec/pixel_1/site_grid.csv"))
+spp.grid <- read.csv(file.path("3PG_Lec/pixel_1/spp_grid.csv"))
+biloxi.grid <- read.csv(file.path("3PG_Lec/biloxi.csv"))
+athens.grid <- read.csv(file.path("3PG_Lec/athens.csv"))
+mic.grid <- read.csv(file.path("3PG_Lec/mic.csv"))
+
 
 PX <- get_parameters(mode = "parameters", sp_names = "Pinus taeda")
 
@@ -49,7 +51,7 @@ spp.grid <- spp.grid %>%
     )
 
 # Combine climate data frames into a named list
-climate_data <- list(pixel.grid = pixel.grid, biloxi.grid = biloxi.grid)
+climate_data <- list(athens.grid = athens.grid, mic.grid = mic.grid, biloxi.grid = biloxi.grid)
 
 # Initialize a list to store outputs
 pg_runs <- list()
