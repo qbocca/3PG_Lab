@@ -7,9 +7,9 @@ library(tidyr)
 
 site.grid <- read.csv(file.path("3PG_Lec/pixel_1/site_grid.csv"))
 spp.grid <- read.csv(file.path("3PG_Lec/pixel_1/spp_grid.csv"))
-biloxi.grid <- read.csv(file.path("3PG_Lec/biloxi.csv"))
-athens.grid <- read.csv(file.path("3PG_Lec/athens.csv"))
-mic.grid <- read.csv(file.path("3PG_Lec/mic.csv"))
+biloxi.grid <- read.csv(file.path("biloxi.csv"))
+athens.grid <- read.csv(file.path("athens.csv"))
+mic.grid <- read.csv(file.path("mic.csv"))
 
 
 PX <- get_parameters(mode = "parameters", sp_names = "Pinus taeda")
