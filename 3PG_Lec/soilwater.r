@@ -102,7 +102,3 @@ combined_output %>%
   theme(legend.position = "bottom") +  # Position the legend at the bottom
   xlab("Calendar date") +  # Label for the x-axis
   ylab('Value')  # Label for the y-axis
-
-
-
-
